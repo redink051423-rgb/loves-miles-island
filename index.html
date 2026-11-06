@@ -751,6 +751,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = .08;
 controls.minDistance = 4; controls.maxDistance = 130; controls.maxPolarAngle = 1.22;
 controls.screenSpacePanning = false;
+window.__DEBUG = { camera, controls, scene, renderer };
 
 const hemi = new THREE.HemisphereLight(0xeef6ff, 0x5b6b4a, .9);
 scene.add(hemi);
