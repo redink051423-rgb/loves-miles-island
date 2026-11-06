@@ -1,0 +1,6 @@
+*.bak
+loves-miles-island.zip
+loves-miles-island.txt
+.DS_Store
+Thumbs.db
+node_modules/
