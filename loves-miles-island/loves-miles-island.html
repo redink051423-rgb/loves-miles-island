@@ -173,7 +173,7 @@ button{cursor:pointer}
 .sheet-toggle{display:none}
 .nogl{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--ink)}
 
-@media (max-width:760px){
+@media (max-width:920px){
   .brand{left:10px;right:10px;max-width:none;padding:10px 14px;top:calc(10px + env(safe-area-inset-top,0px))}
   .brand h1{font-size:20px}
   .brand .sub{font-size:12px;margin-top:2px}
@@ -198,8 +198,8 @@ button{cursor:pointer}
 .tag .n{font-size:10px}
 .tag .p{font-size:9px}
 .city{font-size:11px}
-@media (min-width:761px){
-  .brand{top:calc(12px + env(safe-area-inset-top,0px));left:12px;max-width:none;padding:10px 14px;border-radius:12px}
+@media (min-width:921px){
+  .brand{top:calc(12px + env(safe-area-inset-top,0px));left:12px;max-width:min(360px, calc(100vw - 280px));padding:10px 14px;border-radius:12px}
   .brand h1{font-size:18px}
   .brand .sub{font-size:11.5px;margin-top:3px}
   .tools{margin-top:8px;gap:6px}
@@ -260,8 +260,8 @@ button{cursor:pointer}
 .panel-head select{flex:1;min-width:0;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:6px 8px;font-size:13px}
 .panel.collapsed .panel-head select{display:none}
 .region-pick input{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 9px;font-size:13px}
-@media (max-width:760px){.region-pick input,.panel-head select{font-size:16px}}
-@media (min-width:761px){.region-pick{padding:0 10px 6px}}
+@media (max-width:920px){.region-pick input,.panel-head select{font-size:16px}}
+@media (min-width:921px){.region-pick{padding:0 10px 6px}}
 .region-pick select{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 8px;font-size:12.5px}
 .region{position:fixed;left:16px;bottom:calc(var(--tbh) + 28px + env(safe-area-inset-bottom,0px));width:290px;border-radius:12px;padding:12px 14px}
 .region[hidden]{display:none}
@@ -281,8 +281,8 @@ button{cursor:pointer}
 .rb b{display:block;height:100%;border-radius:3px}
 .rv{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
 .rempty{font-size:12px;color:var(--muted);margin:8px 0 0}
-@media (min-width:761px){.region{left:12px;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}}
-@media (max-width:760px){.region{left:10px;right:10px;width:auto;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}}
+@media (min-width:921px){.region{left:12px;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}}
+@media (max-width:920px){.region{left:10px;right:10px;width:auto;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}}
 
 .marquee{overflow:hidden;white-space:nowrap;font-size:12px;margin:-2px 0 6px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent);mask-image:linear-gradient(90deg,transparent,#000 3%,#000 97%,transparent)}
 .mq-track{display:inline-flex;animation:mq var(--mqd,40s) linear infinite}
@@ -302,7 +302,7 @@ button{cursor:pointer}
 .th-k{font-size:12px;font-weight:700;color:#FF846C;letter-spacing:.3em}
 .th-n{font-size:16px;font-weight:700;color:var(--accent);margin:2px 0}
 .th-d{font-size:12px;color:var(--muted)}
-@media (max-width:760px){.thanks{left:10px}}
+@media (max-width:920px){.thanks{left:10px}}
 @media (prefers-reduced-motion: reduce){.mq-track{animation:none}.marquee{white-space:normal}}
 </style>
 <script type="importmap">
@@ -733,7 +733,7 @@ try {
   document.body.insertAdjacentHTML('beforeend', '<div class="nogl"><p>這個瀏覽器無法顯示 3D 地圖。請換用最新版的 Chrome、Safari 或 Edge 再開一次。</p></div>');
   throw e;
 }
-const isMobile = matchMedia('(max-width:760px)').matches || /Mobi|Android/i.test(navigator.userAgent);
+const isMobile = matchMedia('(max-width:920px)').matches || /Mobi|Android/i.test(navigator.userAgent);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -954,7 +954,7 @@ function clearFleet() {
 }
 
 /* ---------- UI state ---------- */
-let simT = 0, playing = false, speed = 10800, labMode = (matchMedia('(max-width:760px)').matches ? 'moving' : 'all'), selected = null, follow = true, query = '';
+let simT = 0, playing = false, speed = 10800, labMode = (matchMedia('(max-width:920px)').matches ? 'moving' : 'all'), selected = null, follow = true, query = '';
 const $ = s => document.querySelector(s);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -966,7 +966,8 @@ function fitCamera(animate) {
   const dist = Math.max(13.6 / tanV * (H / hA), 10.5 / tanH * (W / wA)) * .97;
   const target = new THREE.Vector3(.3, 1, .4);
   const dir = new THREE.Vector3(-.12, .78, .62).normalize();
-  flyTo(target, dir.multiplyScalar(Math.min(125, dist)), animate ? 1.1 : 0);
+  const maxD = (W < 960 || H < 560) ? 80 : 125;
+  flyTo(target, dir.multiplyScalar(Math.min(maxD, dist)), animate ? 1.1 : 0);
 }
 let fly = null;
 let isRunning = false, idleFrames = 0, lastFrameTime = 0;
@@ -1270,6 +1271,10 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function resize() {
+  if (innerWidth < 1180 && !panelCollapsed) {
+    panelCollapsed = true;
+    applyCollapse();
+  }
   renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth / innerHeight; frameView();
   wakeUp();
@@ -1284,7 +1289,7 @@ function renderTicks() {
   let y = a.y, m = a.m + 1; if (m > 12) { m = 1; y++; }
   const months = [];
   for (let t = tw(y, m, 1); t < tMax; ) { months.push(t); m++; if (m > 12) { m = 1; y++; } t = tw(y, m, 1); }
-  const every = Math.ceil(months.length / (innerWidth < 760 ? 4 : 9));
+  const every = Math.ceil(months.length / (innerWidth < 920 ? 4 : 9));
   let lastY = 0;
   months.forEach((t, i) => { if (i % every) return; const s = document.createElement('span'); s.style.left = ((t - tMin) / span * 100) + '%'; const p = parts(t); s.textContent = p.y !== lastY ? `${p.y}/${p.m}` : `${p.m} 月`; lastY = p.y; el.appendChild(s); });
 }
@@ -1325,7 +1330,7 @@ function applyCollapse() {
   $('#collapse').setAttribute('aria-expanded', !panelCollapsed);
   frameView();
 }
-const isNarrow = () => innerWidth <= 760;
+const isNarrow = () => innerWidth <= 920;
 $('#collapse').onclick = () => { panelCollapsed = !panelCollapsed; applyCollapse(); };
 function reserved() {
   const W = innerWidth, H = innerHeight, tb = $('#timebar').offsetHeight;
@@ -1336,7 +1341,14 @@ function reserved() {
 }
 function frameView() {
   const W = innerWidth, H = innerHeight, r = reserved();
-  camera.setViewOffset(W, H, (r.R - r.L) / 2, (r.B - r.T) / 2, W, H);
+  const availableW = W - r.L - r.R;
+  const offsetX = (W < 1050 || availableW < 520) ? 0 : (r.R - r.L) / 2;
+  const offsetY = (H < 560) ? 0 : (r.B - r.T) / 2;
+  if (offsetX === 0 && offsetY === 0) {
+    camera.clearViewOffset();
+  } else {
+    camera.setViewOffset(W, H, offsetX, offsetY, W, H);
+  }
   camera.updateProjectionMatrix();
 }
 
