@@ -174,7 +174,7 @@ button{cursor:pointer}
 .nogl{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--ink)}
 
 @media (max-width:920px){
-  .brand{left:10px;right:10px;max-width:none;padding:10px 14px;top:calc(10px + env(safe-area-inset-top,0px))}
+  .brand{left:10px;right:auto;max-width:min(380px, calc(100vw - 20px));padding:10px 14px;top:calc(10px + env(safe-area-inset-top,0px))}
   .brand h1{font-size:20px}
   .brand .sub{font-size:12px;margin-top:2px}
   .brand .datanote{margin-top:6px}
@@ -1212,11 +1212,6 @@ function updateUI(c, now) {
   }
 }
 function frame(now) {
-  if (document.hidden) {
-    isRunning = false;
-    return;
-  }
-
   // Frame rate throttling: cap at ~36fps on mobile, 60fps on desktop to avoid high drain on 120Hz/144Hz displays
   const targetFPS = isMobile ? 36 : 60;
   const minInterval = 1000 / targetFPS;
@@ -1260,15 +1255,8 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-let wasPlayingBeforeHidden = false;
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    wasPlayingBeforeHidden = playing;
-    if (playing) setPlaying(false);
-  } else {
-    if (wasPlayingBeforeHidden) setPlaying(true);
-    wakeUp();
-  }
+  if (!document.hidden) wakeUp();
 });
 
 function resize() {
@@ -1277,7 +1265,13 @@ function resize() {
     applyCollapse();
   }
   renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth / innerHeight; frameView();
+  camera.aspect = innerWidth / innerHeight;
+  if (!selected && !follow) {
+    fitCamera(false);
+  } else {
+    frameView();
+  }
+  renderer.render(scene, camera); labelRenderer.render(scene, camera);
   wakeUp();
 }
 addEventListener('resize', () => { resize(); renderTicks(); });
@@ -1703,6 +1697,9 @@ if (saved && saved.rows && saved.rows.length) load(saved.rows, saved.source);
 else load(rowsFromEmbed(EMBED), EMBED.file, tw(2026, 3, 24, 6, 30));
 applyCollapse();
 fitCamera(false);
+applySky(hourOf(simT));
+renderer.render(scene, camera);
+labelRenderer.render(scene, camera);
 document.querySelectorAll('[data-lab]').forEach(x => x.setAttribute('aria-pressed', x.dataset.lab === labMode));
 setPlaying(!reduceMotion);
 wakeUp();
