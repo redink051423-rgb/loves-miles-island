@@ -233,13 +233,14 @@ button{cursor:pointer}
   .events{max-height:150px}
   .events button{font-size:11.5px;padding:4px 5px}
   .detail .row{margin-top:10px}
-  .timebar{left:12px;right:278px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 14px 6px;border-radius:12px}
+  .timebar{left:12px;right:278px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 12px 6px;border-radius:12px}
   body.panel-collapsed .timebar{right:12px}
-  .tb-row{gap:8px}
-  .play{width:32px;height:32px}
-  .play svg{width:14px;height:14px}
-  .clock .d,.clock .t{font-size:15px}
-  .tb-row select{font-size:11.5px;padding:3px 6px;border-radius:8px}
+  .tb-row{gap:6px;flex-wrap:nowrap}
+  .play{width:30px;height:30px}
+  .play svg{width:13px;height:13px}
+  .clock{gap:6px}
+  .clock .d,.clock .t{font-size:14px;white-space:nowrap}
+  .tb-row select{font-size:11.5px;padding:3px 5px;border-radius:8px}
   .track{margin-top:6px;padding-bottom:14px}
   .track input{height:18px}
   .ticks{font-size:10px}
@@ -975,7 +976,7 @@ function fitCamera(animate) {
   const dist = Math.max(13.6 / tanV * (H / hA), 10.5 / tanH * (W / wA)) * .97;
   const target = new THREE.Vector3(.3, 1, .4);
   const dir = new THREE.Vector3(-.12, .78, .62).normalize();
-  const maxD = (W < 960 || H < 560) ? 80 : 125;
+  const maxD = (W < 960 || H < 560) ? 94 : 125;
   flyTo(target, dir.multiplyScalar(Math.min(maxD, dist)), animate ? 1.1 : 0);
 }
 let fly = null;
