@@ -100,15 +100,15 @@ button{cursor:pointer}
 .events .fut{color:var(--accent);font-size:11px;margin-left:4px}
 .events[hidden]{display:none}
 .panel-head input{flex:1;min-width:0;font-size:16px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--paper-solid)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 14px 10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 14px 8px;max-height:76px;overflow-y:auto;flex:none;scrollbar-width:thin}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper-solid);border-radius:999px;padding:3px 10px 3px 8px;font-size:12px}
 .chip i{width:9px;height:9px;border-radius:50%;flex:none}
 .chip em{font-style:normal;color:var(--muted)}
 .chip[aria-pressed="false"]{opacity:.45}
 .chip[aria-pressed="false"] i{background:transparent!important;border:1.5px solid var(--muted)}
-.summary{padding:6px 14px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.summary{padding:6px 14px 8px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);flex:none}
 .summary b{color:var(--ink);font-weight:700}
-.units{list-style:none;margin:0;padding:6px;overflow:auto;flex:1}
+.units{list-style:none;margin:0;padding:6px;overflow:auto;flex:1;min-height:110px}
 .units button{display:grid;grid-template-columns:4px 1fr;gap:10px;width:100%;text-align:left;border:0;background:transparent;border-radius:10px;padding:7px 8px}
 .units button:hover{background:var(--chip)}
 .units button[aria-current="true"]{background:var(--chip);box-shadow:inset 0 0 0 1.5px var(--accent)}
@@ -173,21 +173,25 @@ button{cursor:pointer}
 .sheet-toggle{display:none}
 .nogl{position:fixed;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--ink)}
 
-@media (max-width:920px){
-  .brand{left:10px;right:auto;max-width:min(420px, calc(100vw - 20px));padding:8px 12px;top:calc(10px + env(safe-area-inset-top,0px));border-radius:12px}
+@media (max-width:600px){
+  .brand{left:10px;right:auto;max-width:calc(100vw - 20px);padding:8px 12px;top:calc(10px + env(safe-area-inset-top,0px));border-radius:12px}
   .brand h1{font-size:17px}
   .brand .sub{font-size:11.5px;margin-top:2px}
   .brand .datanote{margin-top:4px}
   .tools{margin-top:6px;gap:5px}
   .seg button,.btn{font-size:11.5px;padding:3px 8px}
   .timebar{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:10px 12px 8px}
-  .clock .d{font-size:16px}.clock .t{font-size:16px}
-  .play{width:38px;height:38px}
-  .panel{left:10px;right:10px;width:auto;top:auto;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px));max-height:56vh;display:none}
+  .clock .d{font-size:15px}.clock .t{font-size:15px}
+  .play{width:34px;height:34px}
+  .panel{left:10px;right:10px;width:auto;top:auto;bottom:calc(var(--tbh) + 16px + env(safe-area-inset-bottom,0px));max-height:60vh;display:none;z-index:30}
   .panel.open{display:flex}
-  .detail{left:10px;right:10px;width:auto;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}
+  .chips{max-height:60px;padding:2px 10px 6px;gap:4px}
+  .chip{font-size:11px;padding:2px 8px 2px 6px;gap:5px}
+  .detail{left:10px;right:10px;width:auto;bottom:calc(var(--tbh) + 16px + env(safe-area-inset-bottom,0px));z-index:30}
   .sheet-toggle{display:inline-block}
-  .collapse{display:none}
+  .day-btns{display:none}
+}
+@media (max-width:860px){
   .day-btns{display:none}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -199,17 +203,18 @@ button{cursor:pointer}
 .tag .n{font-size:10px}
 .tag .p{font-size:9px}
 .city{font-size:11px}
-@media (min-width:921px){
+@media (min-width:601px){
   .brand{top:calc(12px + env(safe-area-inset-top,0px));left:12px;max-width:min(360px, calc(100vw - 280px));padding:10px 14px;border-radius:12px}
   .brand h1{font-size:18px}
   .brand .sub{font-size:11.5px;margin-top:3px}
   .tools{margin-top:8px;gap:6px}
   .seg button,.btn{font-size:11.5px;padding:3px 9px}
-  .panel{top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:250px;border-radius:12px;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}
+  .panel{top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:255px;border-radius:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:20}
+  .panel.collapsed{bottom:auto;width:auto}
   .panel-head{padding:10px 10px 6px;gap:6px}
   .panel-head input{font-size:13px;padding:5px 9px;border-radius:8px}
   .collapse{padding:5px 9px;font-size:11.5px;border-radius:8px}
-  .chips{padding:2px 10px 8px;gap:4px}
+  .chips{padding:2px 10px 6px;gap:4px;max-height:74px;overflow-y:auto}
   .chip{font-size:11px;padding:2px 8px 2px 6px;gap:5px}
   .chip i{width:7px;height:7px}
   .summary{font-size:11px;padding:4px 10px 6px}
@@ -219,7 +224,7 @@ button{cursor:pointer}
   .units .meta{font-size:11px;gap:6px}
   .import{font-size:11.5px;padding:8px 10px 10px}
   .import summary{font-size:12px}
-  .detail{left:12px;width:270px;padding:12px 14px;border-radius:12px;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}
+  .detail{left:12px;width:265px;padding:12px 14px;border-radius:12px;bottom:calc(var(--tbh) + 20px + env(safe-area-inset-bottom,0px))}
   .detail .x{width:26px;height:26px;font-size:14px;top:8px;right:8px}
   .detail h2{font-size:16px;margin-bottom:4px}
   .detail .topic{font-size:11px}
@@ -228,8 +233,9 @@ button{cursor:pointer}
   .events{max-height:150px}
   .events button{font-size:11.5px;padding:4px 5px}
   .detail .row{margin-top:10px}
-  .timebar{left:12px;right:274px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 14px 6px;border-radius:12px}
-  .tb-row{gap:10px}
+  .timebar{left:12px;right:278px;bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:8px 14px 6px;border-radius:12px}
+  body.panel-collapsed .timebar{right:12px}
+  .tb-row{gap:8px}
   .play{width:32px;height:32px}
   .play svg{width:14px;height:14px}
   .clock .d,.clock .t{font-size:15px}
@@ -239,7 +245,7 @@ button{cursor:pointer}
   .ticks{font-size:10px}
 }
 .import[hidden]{display:none}
-.timebar.mini{right:auto;padding-bottom:8px}
+.timebar.mini{right:auto!important;padding-bottom:8px}
 .tb-toggle{width:28px;height:28px;padding:0!important;display:grid;place-items:center;font-size:18px!important;line-height:1;font-weight:500}
 .timebar.mini .track,.timebar.mini .day-btns,.timebar.mini select,.timebar.mini .tb-spacer{display:none}
 .tour{position:fixed;inset:0;z-index:50}
@@ -258,11 +264,11 @@ button{cursor:pointer}
 @media (prefers-reduced-motion: reduce){.tour-hole,.tour-card{transition:none}}
 
 .region-pick{padding:0 14px 8px}
-.panel-head select{flex:1;min-width:0;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:6px 8px;font-size:13px}
+.panel-head select{flex:1;min-width:0;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 8px;font-size:12.5px}
 .panel.collapsed .panel-head select{display:none}
-.region-pick input{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 9px;font-size:13px}
-@media (max-width:920px){.region-pick input,.panel-head select{font-size:16px}}
-@media (min-width:921px){.region-pick{padding:0 10px 6px}}
+.region-pick input{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 9px;font-size:12.5px}
+@media (max-width:600px){.region-pick{padding:0 10px 6px}.region-pick input,.panel-head select{font-size:14px}}
+@media (min-width:601px){.region-pick{padding:0 10px 6px}}
 .region-pick select{width:100%;border:1px solid var(--line);background:var(--paper-solid);border-radius:8px;padding:5px 8px;font-size:12.5px}
 .region{position:fixed;left:16px;bottom:calc(var(--tbh) + 28px + env(safe-area-inset-bottom,0px));width:290px;border-radius:12px;padding:12px 14px}
 .region[hidden]{display:none}
@@ -1032,7 +1038,7 @@ document.querySelectorAll('[data-lab]').forEach(b => b.onclick = () => {
   wakeUp();
 });
 $('#overview').onclick = () => { follow = false; syncDetailBtns(); fitCamera(true); wakeUp(); };
-$('#sheetToggle').onclick = () => { const p = $('#panel'); p.classList.toggle('open'); if (p.classList.contains('open')) $('#detail').hidden = true; wakeUp(); };
+$('#sheetToggle').onclick = () => { userToggledPanel = true; panelCollapsed = !panelCollapsed; if (!panelCollapsed) $('#detail').hidden = true; applyCollapse(); };
 $('#q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); renderList(); wakeUp(); });
 $('#closeDetail').onclick = () => select(null);
 $('#dFollow').onclick = () => { follow = !follow; syncDetailBtns(); wakeUp(); };
@@ -1278,10 +1284,10 @@ document.addEventListener('visibilitychange', () => {
 
 function resize() {
   const W = vpW(), H = vpH();
-  if (W < 1180 && !panelCollapsed) {
-    panelCollapsed = true;
-    applyCollapse();
+  if (!userToggledPanel) {
+    panelCollapsed = W < 1180;
   }
+  applyCollapse();
   renderer.setSize(W, H); labelRenderer.setSize(W, H);
   camera.aspect = W / H;
   if (!selected) {
@@ -1350,16 +1356,19 @@ function renderEvents(u) {
 }
 
 /* ---------- framing: keep the island clear of the panels ---------- */
-let panelCollapsed = !isMobile && vpW() < 1240;
+let panelCollapsed = vpW() < 1180, userToggledPanel = false;
+const isNarrow = () => vpW() <= 600;
 function applyCollapse() {
   const p = $('#panel');
   p.classList.toggle('collapsed', panelCollapsed && !isNarrow());
+  p.classList.toggle('open', !panelCollapsed && isNarrow());
+  document.body.classList.toggle('panel-collapsed', panelCollapsed);
   $('#collapse').textContent = panelCollapsed ? '展開清單' : '收起清單';
   $('#collapse').setAttribute('aria-expanded', !panelCollapsed);
   frameView();
+  wakeUp();
 }
-const isNarrow = () => vpW() <= 920;
-$('#collapse').onclick = () => { panelCollapsed = !panelCollapsed; applyCollapse(); };
+$('#collapse').onclick = () => { userToggledPanel = true; panelCollapsed = !panelCollapsed; if (!panelCollapsed && isNarrow()) $('#detail').hidden = true; applyCollapse(); };
 function reserved() {
   const W = vpW(), H = vpH(), tb = $('#timebar').offsetHeight || 96, brandH = $('.brand').offsetHeight || 110;
   if (isNarrow()) return { L: 0, R: 0, T: brandH + 16, B: tb + 16 };
@@ -1370,8 +1379,8 @@ function reserved() {
 function frameView() {
   const W = vpW(), H = vpH(), r = reserved();
   const availableW = W - r.L - r.R;
-  const offsetX = (W < 1050 || availableW < 520) ? 0 : (r.R - r.L) / 2;
-  const offsetY = (H < 560) ? 0 : (r.B - r.T) / 2;
+  const offsetX = (W <= 600 || availableW < 280) ? 0 : (r.R - r.L) / 2;
+  const offsetY = (H < 460) ? 0 : (r.B - r.T) / 2;
   if (offsetX === 0 && offsetY === 0) {
     camera.clearViewOffset();
   } else {
