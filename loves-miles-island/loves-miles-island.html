@@ -535,8 +535,8 @@ const HEAD = {
   partner: ['共創夥伴', '單位', '單位名稱', '夥伴'],
   start: ['開始用車時間', '開始時間', '取車時間'],
   end: ['結束用車時間', '結束時間', '還車時間'],
-  st0: ['車輛初始地點', '取車地點', '初始地點'],
-  st1: ['車輛結束地點', '還車地點', '結束地點'],
+  st0: ['起點地點', '車輛初始地點', '取車地點', '初始地點', '起點'],
+  st1: ['迄點地點', '車輛結束地點', '還車地點', '結束地點', '迄點'],
   issue: ['服務議題', '議題'],
   purpose: ['用車目的', '目的']
 };
@@ -1733,6 +1733,8 @@ addEventListener('keydown', e => {
 addEventListener('resize', () => { if (tourI >= 0) placeTour(); });
 
 /* ---------- start ---------- */
+const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSugS6mCHQuEMRQm8PwCltJMirQkmJ21PVraVG152iSLvIRb_5kjzyAx_IuVr4vmbWtE8WVrxAGMp1q/pub?output=csv';
+
 let saved = null;
 try { const s = localStorage.getItem(STORE); if (s) saved = JSON.parse(s); } catch (e) { saved = null; }
 if (saved && saved.rows && saved.rows.length) load(saved.rows, saved.source);
@@ -1742,6 +1744,26 @@ resize();
 document.querySelectorAll('[data-lab]').forEach(x => x.setAttribute('aria-pressed', x.dataset.lab === labMode));
 setPlaying(!reduceMotion);
 wakeUp();
+
+// Background fetch Google Sheets live CSV (zero blocking on initial load, auto-upgrades data)
+(async () => {
+  try {
+    const res = await fetch(GOOGLE_SHEETS_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) return;
+    const text = await res.text();
+    if (!text || text.length < 50) return;
+    const table = parseCSV(text.replace(/^\uFEFF/, ''));
+    const { rows, bad } = rowsFromTable(table);
+    if (rows && rows.length > 0) {
+      load(rows, 'Google Sheets 線上試算表');
+      renderTicks();
+      if (!selected) fitCamera(false);
+      wakeUp();
+    }
+  } catch (err) {
+    console.warn('Google Sheets live sync skipped:', err);
+  }
+})();
 let tourSeen = false;
 try { tourSeen = !!localStorage.getItem(TOUR_KEY); } catch (e) {}
 if (!tourSeen && window.self === window.top) setTimeout(startTour, 900);
