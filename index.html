@@ -733,7 +733,7 @@ try {
   document.body.insertAdjacentHTML('beforeend', '<div class="nogl"><p>這個瀏覽器無法顯示 3D 地圖。請換用最新版的 Chrome、Safari 或 Edge 再開一次。</p></div>');
   throw e;
 }
-const isMobile = matchMedia('(max-width:920px)').matches || /Mobi|Android/i.test(navigator.userAgent);
+const isMobile = (innerWidth > 0 && innerWidth <= 920) || /Mobi|Android/i.test(navigator.userAgent);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -955,15 +955,16 @@ function clearFleet() {
 }
 
 /* ---------- UI state ---------- */
-let simT = 0, playing = false, speed = 10800, labMode = (matchMedia('(max-width:920px)').matches ? 'moving' : 'all'), selected = null, follow = true, query = '';
+const vpW = () => Math.max(320, innerWidth || 800), vpH = () => Math.max(240, innerHeight || 500);
+let simT = 0, playing = false, speed = 10800, labMode = (vpW() <= 920 ? 'moving' : 'all'), selected = null, follow = true, query = '';
 const $ = s => document.querySelector(s);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function fitCamera(animate) {
   frameView();
-  const r = reserved(), W = innerWidth, H = innerHeight;
+  const r = reserved(), W = vpW(), H = vpH();
   const wA = Math.max(200, W - r.L - r.R), hA = Math.max(200, H - r.T - r.B);
-  const tanV = Math.tan(THREE.MathUtils.degToRad(16)), tanH = tanV * W / H;
+  const tanV = Math.tan(THREE.MathUtils.degToRad(16)), tanH = tanV * (W / H);
   const dist = Math.max(13.6 / tanV * (H / hA), 10.5 / tanH * (W / wA)) * .97;
   const target = new THREE.Vector3(.3, 1, .4);
   const dir = new THREE.Vector3(-.12, .78, .62).normalize();
@@ -984,7 +985,15 @@ function wakeUp() {
 
 function flyTo(target, offset, dur) {
   wakeUp();
-  if (!dur || reduceMotion) { controls.target.copy(target); camera.position.copy(target).add(offset); fly = null; return; }
+  const badCam = !Number.isFinite(camera.position.x) || !Number.isFinite(controls.target.x);
+  if (!dur || reduceMotion || badCam) {
+    controls.target.copy(target);
+    camera.position.copy(target).add(offset);
+    camera.lookAt(target);
+    controls.update();
+    fly = null;
+    return;
+  }
   fly = { t: 0, dur, fromT: controls.target.clone(), toT: target.clone(), fromO: camera.position.clone().sub(controls.target), toO: offset.clone() };
 }
 controls.addEventListener('start', () => { fly = null; wakeUp(); });
@@ -1211,6 +1220,7 @@ function updateUI(c, now) {
     }
   }
 }
+let lastW = 0, lastH = 0;
 function frame(now) {
   // Frame rate throttling: cap at ~36fps on mobile, 60fps on desktop to avoid high drain on 120Hz/144Hz displays
   const targetFPS = isMobile ? 36 : 60;
@@ -1221,6 +1231,12 @@ function frame(now) {
     return;
   }
   lastFrameTime = now - (elapsed % minInterval);
+
+  if (innerWidth > 0 && innerHeight > 0 && (innerWidth !== lastW || innerHeight !== lastH)) {
+    lastW = innerWidth; lastH = innerHeight;
+    resize(); renderTicks();
+    if (tourI >= 0) placeTour();
+  }
 
   const dt = Math.min(.1, (now - lastFrame) / 1000); lastFrame = now; clockT += dt;
   if (playing) { simT += dt * speed; if (simT >= tMax) { simT = tMax; setPlaying(false); } }
@@ -1260,22 +1276,38 @@ document.addEventListener('visibilitychange', () => {
 });
 
 function resize() {
-  if (innerWidth < 1180 && !panelCollapsed) {
+  const W = vpW(), H = vpH();
+  if (W < 1180 && !panelCollapsed) {
     panelCollapsed = true;
     applyCollapse();
   }
-  renderer.setSize(innerWidth, innerHeight); labelRenderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth / innerHeight;
-  if (!selected && !follow) {
+  renderer.setSize(W, H); labelRenderer.setSize(W, H);
+  camera.aspect = W / H;
+  if (!selected) {
     fitCamera(false);
   } else {
     frameView();
   }
-  renderer.render(scene, camera); labelRenderer.render(scene, camera);
+  if (simT > 0) {
+    applySky(playing && speed >= 21600 ? 12 : hourOf(simT));
+    sun.target.position.copy(controls.target); sun.position.add(controls.target);
+    controls.update();
+    renderer.render(scene, camera); labelRenderer.render(scene, camera);
+  }
   wakeUp();
 }
 addEventListener('resize', () => { resize(); renderTicks(); });
-new ResizeObserver(() => { document.documentElement.style.setProperty('--tbh', $('#timebar').offsetHeight + 'px'); frameView(); }).observe($('#timebar'));
+new ResizeObserver(() => {
+  const tbh = $('#timebar').offsetHeight;
+  if (tbh > 0) document.documentElement.style.setProperty('--tbh', tbh + 'px');
+  if (innerWidth > 0 && innerHeight > 0 && (innerWidth !== lastW || innerHeight !== lastH)) {
+    lastW = innerWidth; lastH = innerHeight;
+    resize(); renderTicks();
+    if (tourI >= 0) placeTour();
+  } else {
+    frameView();
+  }
+}).observe(document.documentElement);
 
 function renderTicks() {
   const el = $('#ticks'); el.innerHTML = '';
@@ -1284,7 +1316,7 @@ function renderTicks() {
   let y = a.y, m = a.m + 1; if (m > 12) { m = 1; y++; }
   const months = [];
   for (let t = tw(y, m, 1); t < tMax; ) { months.push(t); m++; if (m > 12) { m = 1; y++; } t = tw(y, m, 1); }
-  const every = Math.ceil(months.length / (innerWidth < 920 ? 4 : 9));
+  const every = Math.ceil(months.length / (vpW() < 920 ? 4 : 9));
   let lastY = 0;
   months.forEach((t, i) => { if (i % every) return; const s = document.createElement('span'); s.style.left = ((t - tMin) / span * 100) + '%'; const p = parts(t); s.textContent = p.y !== lastY ? `${p.y}/${p.m}` : `${p.m} 月`; lastY = p.y; el.appendChild(s); });
 }
@@ -1317,7 +1349,7 @@ function renderEvents(u) {
 }
 
 /* ---------- framing: keep the island clear of the panels ---------- */
-let panelCollapsed = !isMobile && innerWidth < 1240;
+let panelCollapsed = !isMobile && vpW() < 1240;
 function applyCollapse() {
   const p = $('#panel');
   p.classList.toggle('collapsed', panelCollapsed && !isNarrow());
@@ -1325,17 +1357,17 @@ function applyCollapse() {
   $('#collapse').setAttribute('aria-expanded', !panelCollapsed);
   frameView();
 }
-const isNarrow = () => innerWidth <= 920;
+const isNarrow = () => vpW() <= 920;
 $('#collapse').onclick = () => { panelCollapsed = !panelCollapsed; applyCollapse(); };
 function reserved() {
-  const W = innerWidth, H = innerHeight, tb = $('#timebar').offsetHeight;
-  if (isNarrow()) return { L: 0, R: 0, T: $('.brand').offsetHeight + 16, B: tb + 16 };
+  const W = vpW(), H = vpH(), tb = $('#timebar').offsetHeight || 96, brandH = $('.brand').offsetHeight || 110;
+  if (isNarrow()) return { L: 0, R: 0, T: brandH + 16, B: tb + 16 };
   const p = $('#panel');
   const d = $('#detail'), rg = $('#region');
-  return { L: !d.hidden ? d.offsetWidth + 16 : !rg.hidden ? rg.offsetWidth + 16 : 0, R: p.classList.contains('collapsed') ? 0 : p.offsetWidth + 16, T: $('.brand').offsetHeight + 12, B: tb + 16 };
+  return { L: !d.hidden ? d.offsetWidth + 16 : !rg.hidden ? rg.offsetWidth + 16 : 0, R: p.classList.contains('collapsed') ? 0 : p.offsetWidth + 16, T: brandH + 12, B: tb + 16 };
 }
 function frameView() {
-  const W = innerWidth, H = innerHeight, r = reserved();
+  const W = vpW(), H = vpH(), r = reserved();
   const availableW = W - r.L - r.R;
   const offsetX = (W < 1050 || availableW < 520) ? 0 : (r.R - r.L) / 2;
   const offsetY = (H < 560) ? 0 : (r.B - r.T) / 2;
@@ -1658,8 +1690,8 @@ function placeTour() {
   const s = tourSteps[tourI], hole = $('#tourHole'), card = $('#tourCard');
   const el = s.el ? document.querySelector(s.el) : null;
   const r = el && el.getClientRects().length ? el.getBoundingClientRect() : null;
-  const W = innerWidth, H = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight, pad = 6, gap = 12;
-  if (!r) { hole.classList.add('none'); card.style.left = (W - cw) / 2 + 'px'; card.style.top = (H - ch) / 2 + 'px'; return; }
+  const W = vpW(), H = vpH(), cw = card.offsetWidth || 300, ch = card.offsetHeight || 180, pad = 6, gap = 12;
+  if (!r || r.width === 0) { hole.classList.add('none'); card.style.left = (W - cw) / 2 + 'px'; card.style.top = (H - ch) / 2 + 'px'; return; }
   hole.classList.remove('none');
   Object.assign(hole.style, { left: r.left - pad + 'px', top: r.top - pad + 'px', width: r.width + pad * 2 + 'px', height: r.height + pad * 2 + 'px' });
   let top = r.bottom + pad + gap;
@@ -1690,22 +1722,18 @@ addEventListener('keydown', e => {
 addEventListener('resize', () => { if (tourI >= 0) placeTour(); });
 
 /* ---------- start ---------- */
-resize();
 let saved = null;
 try { const s = localStorage.getItem(STORE); if (s) saved = JSON.parse(s); } catch (e) { saved = null; }
 if (saved && saved.rows && saved.rows.length) load(saved.rows, saved.source);
 else load(rowsFromEmbed(EMBED), EMBED.file, tw(2026, 3, 24, 6, 30));
 applyCollapse();
-fitCamera(false);
-applySky(hourOf(simT));
-renderer.render(scene, camera);
-labelRenderer.render(scene, camera);
+resize();
 document.querySelectorAll('[data-lab]').forEach(x => x.setAttribute('aria-pressed', x.dataset.lab === labMode));
 setPlaying(!reduceMotion);
 wakeUp();
 let tourSeen = false;
 try { tourSeen = !!localStorage.getItem(TOUR_KEY); } catch (e) {}
-if (!tourSeen) setTimeout(startTour, 900);
+if (!tourSeen && window.self === window.top) setTimeout(startTour, 900);
 // 只有網站擁有者看得到「匯入新的對帳報表」
 (async () => {
   try {
