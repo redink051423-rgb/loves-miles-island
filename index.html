@@ -624,7 +624,7 @@ function stateAt(u, t) {
 
 /* ---------- 2026 永續行動車 硬派卡 ---------- */
 // 地點座標依校名、場館名推估到鄉鎮或街區
-const HP_RAW = [
+let HP_RAW = [
   { d: ['2026-03-24'], org: '天天華語', course: '硬派卡食農教育課', stops: [['宜蘭縣岳明國小', 24.756, 121.762], ['宜蘭縣士敏國小', 24.640, 121.790]] },
   { d: ['2026-03-26'], org: '天天華語', course: '硬派卡食農教育課', stops: [['宜蘭縣柯林國小', 24.636, 121.749], ['宜蘭縣大溪國小', 24.938, 121.889]] },
   { d: ['2026-03-31'], org: '翻轉兒童節', course: '硬派卡永續食堂', stops: [['新北市山佳國小', 24.956, 121.396]] },
@@ -648,7 +648,7 @@ const HP_RAW = [
   { d: ['2026-11-10', '2026-11-11', '2026-11-12', '2026-11-13', '2026-11-14', '2026-11-15'], org: '宇宙製造', course: '臺灣教育科技展', stops: [['臺北世貿一館', 25.034, 121.563]] },
   { d: ['2026-11-20', '2026-11-21', '2026-11-22'], org: '新北市農業局', course: '森林食光：味覺星球探險隊', stops: [['府中捷運站', 25.008, 121.459]] }
 ];
-const HP_COUNTY = { '宜蘭縣岳明國小': '宜蘭縣', '宜蘭縣士敏國小': '宜蘭縣', '宜蘭縣柯林國小': '宜蘭縣', '宜蘭縣大溪國小': '宜蘭縣', '新北市山佳國小': '新北市', '新北市北新國小': '新北市', '屏東青少年夢想聯盟': '屏東縣', '屏東縣丹路國小': '屏東縣', '臺北市公館國小': '臺北市', '基隆明德國中': '基隆市', '屏東縣車城國小': '屏東縣', '屏東縣牡丹鄉圖書館': '屏東縣', '孩子的書屋': '臺東縣', '松菸文創園區': '臺北市', '花蓮縣練習曲書屋': '花蓮縣', '苗栗縣苑裡鎮公所': '苗栗縣', '新店裕隆城': '新北市', '桃園市復興區泰雅族社區': '桃園市', '中壢南方莊園酒店': '桃園市', '新北市雲海國小': '新北市', '凱達格蘭大道': '臺北市', '匯豐汽車新店所': '新北市', '花蓮家扶中心': '花蓮縣', '臺北世貿一館': '臺北市', '府中捷運站': '新北市' };
+let HP_COUNTY = { '宜蘭縣岳明國小': '宜蘭縣', '宜蘭縣士敏國小': '宜蘭縣', '宜蘭縣柯林國小': '宜蘭縣', '宜蘭縣大溪國小': '宜蘭縣', '新北市山佳國小': '新北市', '新北市北新國小': '新北市', '屏東青少年夢想聯盟': '屏東縣', '屏東縣丹路國小': '屏東縣', '臺北市公館國小': '臺北市', '基隆明德國中': '基隆市', '屏東縣車城國小': '屏東縣', '屏東縣牡丹鄉圖書館': '屏東縣', '孩子的書屋': '臺東縣', '松菸文創園區': '臺北市', '花蓮縣練習曲書屋': '花蓮縣', '苗栗縣苑裡鎮公所': '苗栗縣', '新店裕隆城': '新北市', '桃園市復興區泰雅族社區': '桃園市', '中壢南方莊園酒店': '桃園市', '新北市雲海國小': '新北市', '凱達格蘭大道': '臺北市', '匯豐汽車新店所': '新北市', '花蓮家扶中心': '花蓮縣', '臺北世貿一館': '臺北市', '府中捷運站': '新北市' };
 const COUNTIES = ['臺北市', '新北市', '基隆市', '桃園市', '新竹市', '新竹縣', '苗栗縣', '臺中市', '彰化縣', '南投縣', '雲林縣', '嘉義市', '嘉義縣', '臺南市', '高雄市', '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣', '金門縣', '連江縣'];
 function countyQuery(q) {
   if (!q) return null;
@@ -730,6 +730,41 @@ function hpStatus(u, st) {
   const v = u.ev[g.next], x = HP_RAW[v.i], p = parts(v.s);
   const before = g.t0 === -Infinity;
   return { short: before ? '尚未出發' : `停在${g.at[0]}`, long: `${before ? '2026 年第一場' : '下一場'}在 ${p.m}/${p.d}：${v.st[0]}「${x.course}」${isFuture(v.s) ? '（預定）' : ''}`, where: g.at[0], label: HP_TOPIC };
+}
+
+function rebuildHP(parsedRaw) {
+  if (!parsedRaw || !parsedRaw.length) return;
+  HP_RAW = parsedRaw;
+  parsedRaw.forEach(x => {
+    x.stops.forEach(([name]) => {
+      if (!HP_COUNTY[name]) {
+        const found = COUNTIES.find(c => name.includes(c) || name.startsWith(c.slice(0, 2)));
+        if (found) HP_COUNTY[name] = found;
+      }
+    });
+  });
+  const newU = buildHP();
+  const u = UNITS.find(x => x.kind === 'hp');
+  if (u) {
+    u.n = newU.n;
+    u.ev = newU.ev;
+    u.segs = newU.segs;
+    u.firstStart = newU.firstStart;
+    u.hpCounties = newU.hpCounties;
+    u.search = newU.search;
+    u.s = newU.s;
+    u.e = newU.e;
+    u.end = newU.end;
+    u.curEv = -1;
+    tMax = Math.max(tMax, u.end + 12 * HR);
+    if (TOPICS[0] && TOPICS[0].name === HP_TOPIC) {
+      TOPICS[0].count = HP_RAW.length;
+      renderChips();
+    }
+    if (selected === u) renderEvents(u);
+    renderList();
+    wakeUp();
+  }
 }
 
 /* ---------- three.js scene ---------- */
@@ -1749,8 +1784,9 @@ addEventListener('keydown', e => {
 addEventListener('resize', () => { if (tourI >= 0) placeTour(); });
 
 /* ---------- start ---------- */
-const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSugS6mCHQuEMRQm8PwCltJMirQkmJ21PVraVG152iSLvIRb_5kjzyAx_IuVr4vmbWtE8WVrxAGMp1q/pub?output=csv';
-const GOOGLE_SPONSORS_CSV_URL = '';
+const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSugS6mCHQuEMRQm8PwCltJMirQkmJ21PVraVG152iSLvIRb_5kjzyAx_IuVr4vmbWtE8WVrxAGMp1q/pub?gid=530518852&single=true&output=csv';
+const GOOGLE_SPONSORS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSugS6mCHQuEMRQm8PwCltJMirQkmJ21PVraVG152iSLvIRb_5kjzyAx_IuVr4vmbWtE8WVrxAGMp1q/pub?gid=1346285810&single=true&output=csv';
+const GOOGLE_HP_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSugS6mCHQuEMRQm8PwCltJMirQkmJ21PVraVG152iSLvIRb_5kjzyAx_IuVr4vmbWtE8WVrxAGMp1q/pub?gid=847004139&single=true&output=csv';
 
 let saved = null;
 try { const s = localStorage.getItem(STORE); if (s) saved = JSON.parse(s); } catch (e) { saved = null; }
@@ -1810,6 +1846,62 @@ wakeUp();
     }
   } catch (err) {
     console.warn('Google Sheets sponsors sync skipped:', err);
+  }
+})();
+
+// Background fetch live Hardcard CSV if configured
+(async () => {
+  if (!GOOGLE_HP_CSV_URL) return;
+  try {
+    const res = await fetch(GOOGLE_HP_CSV_URL, { cache: 'no-cache' });
+    if (!res.ok) return;
+    const text = await res.text();
+    if (!text || text.length < 20) return;
+    const table = parseCSV(text.replace(/^\uFEFF/, ''));
+    if (!table || table.length <= 1) return;
+    const head = table[0].map(c => String(c).trim());
+    const dCol = head.findIndex(h => h.includes('日期'));
+    const orgCol = head.findIndex(h => h.includes('機構') || h.includes('單位'));
+    const courseCol = head.findIndex(h => h.includes('活動名稱') || h.includes('課程'));
+    const stopCol = head.findIndex(h => h.includes('地點'));
+    const latCol = head.findIndex(h => h.includes('緯度'));
+    const lngCol = head.findIndex(h => h.includes('經度'));
+    if (dCol < 0 || stopCol < 0) return;
+
+    const normD = str => {
+      const p = str.trim().split(/[\/-]/).map(Number);
+      return (p.length === 3 && p[0] > 2000) ? `${p[0]}-${String(p[1]).padStart(2, '0')}-${String(p[2]).padStart(2, '0')}` : str.trim();
+    };
+    const parseDs = str => str.split(/[、,，;；\s]+/).filter(Boolean).map(normD);
+
+    const groups = new Map();
+    for (const r of table.slice(1)) {
+      const rawD = String(r[dCol] || '').trim();
+      const org = orgCol >= 0 ? String(r[orgCol] || '').trim() : '';
+      const course = courseCol >= 0 ? String(r[courseCol] || '').trim() : '';
+      const stopName = String(r[stopCol] || '').trim();
+      const lat = latCol >= 0 ? parseFloat(r[latCol]) : NaN;
+      const lng = lngCol >= 0 ? parseFloat(r[lngCol]) : NaN;
+      if (!rawD || !stopName || isNaN(lat) || isNaN(lng)) continue;
+
+      const dates = parseDs(rawD);
+      const key = dates.join(',') + '|' + org + '|' + course;
+      let g = groups.get(key);
+      if (!g) {
+        g = { d: dates, org, course, stops: [] };
+        groups.set(key, g);
+      }
+      if (!g.stops.some(s => s[0] === stopName)) {
+        g.stops.push([stopName, lat, lng]);
+      }
+    }
+    const parsed = [...groups.values()];
+    if (parsed.length > 0) {
+      rebuildHP(parsed);
+      wakeUp();
+    }
+  } catch (err) {
+    console.warn('Google Sheets Hardcard sync skipped:', err);
   }
 })();
 let tourSeen = false;
